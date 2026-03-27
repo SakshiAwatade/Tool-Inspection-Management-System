@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tool Inspection Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f4f6f9;
+    }
+    .container { display: flex; height: 100vh; }
+    .left-pane {
+      width: 50%;
+      padding: 20px;
+      border-right: 2px solid #ccc;
+      overflow-y: auto;
+      background-color: #fff;
+    }
+    .right-pane {
+      width: 50%;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #aaa;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #004085;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-size: 14px;
+      vertical-align: top;
+    }
+    th {
+      background-color: #2d5fa5;
+      color: white;
+      text-align: center;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 6px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    textarea { resize: vertical; }
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px 5px 0 0;
+    }
+    .submit-btn { background-color: #007bff; color: white; }
+    .add-btn { background-color: #28a745; color: white; }
+    .remove-btn { background-color: #dc3545; color: white; }
+    .submit-btn:hover { background-color: #0056b3; }
+    .add-btn:hover { background-color: #218838; }
+    .remove-btn:hover { background-color: #c82333; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Left Pane -->
+  <div class="left-pane">
+    <h3>Drawing Image</h3>
+    <div id="drawingArea">No Drawing Selected</div>
+  </div>
+
+  <!-- Right Pane -->
+  <div class="right-pane">
+    <h2>Tool Inspection Measurement Report</h2>
+
+    <form action="save_to_database.php" method="POST">
+      <table>
+        <tr>
+          <td colspan="2"><strong>Part Description:</strong><br><input type="text" name="part_description" id="part_description" required></td>
+          <td><strong>GIN No.:</strong><br><input type="text" name="gin_no" id="gin_no" required></td>
+          <td><strong>Date:</strong><br><input type="date" name="date" id="date" required></td>
+        </tr>
+        <tr>
+          <td colspan="2"><strong>Drawing Number:</strong><br><input type="text" name="drawing_number" id="drawing_number" onblur="loadDrawingImage()"></td>
+          <td colspan="2"><strong>Supplier Name:</strong><br><input type="text" name="supplier_name" id="supplier_name"></td>
+        </tr>
+        <tr>
+          <td><strong>Status:</strong><br>
+            <select onchange="document.getElementById('otherRemark').style.display = this.value === 'other' ? 'block':'none'">
+              <option value="OK">OK</option>
+              <option value="Not OK">Not OK</option>
+              <option value="other">Other</option>
+            </select>
+            <div id="otherRemark" style="display:none;">
+              <input type="text" name="otherText" placeholder="Other remark">
+            </div>
+          </td>
+          <td><strong>Qty:</strong><br><input type="number" name="quantity" id="quantity"></td>
+          <td><strong>Checked:</strong><br><input type="number" name="Checked" id="Checked"></td>
+          <td><strong>Tool Category:</strong><br><input type="text" name="tool_category" id="tool_category"></td>
+        </tr>
+      </table>
+
+      <table id="measurements">
+        <thead>
+          <tr>
+            <th rowspan="2">Sr. No</th>
+            <th rowspan="2">Description of Measurement</th>
+            <th colspan="2">DIMENSION</th>
+            <th rowspan="2">Action</th>
+          </tr>
+          <tr>
+            <th>Specified Size and Tolerance</th>
+            <th>Actual Size</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><textarea name="desc[]">Visual Inspection</textarea></td>
+            <td><textarea name="specified[]">OK</textarea></td>
+            <td><textarea name="actual[]"></textarea></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="btn add-btn" onclick="addRow()">+ Add Row</button><br><br>
+
+      <table>
+        <tr>
+          <td colspan="4"><strong>Marking:</strong><br><textarea name="marking" rows="2"></textarea></td>
+        </tr>
+        <tr>
+          <td colspan="4"><strong>Remarks:</strong><br><textarea name="remarks" rows="3"></textarea></td>
+        </tr>
+        <tr>
+          <td><strong>Sec. Head</strong></td>
+          <td colspan="3"><strong>Checked by & Dt.</strong></td>
+        </tr>
+      </table>
+
+      <center><button type="submit" class="btn submit-btn">Submit</button></center>
+    </form>
+  </div>
+</div>
+
+<script>
+  function addRow() {
+    const table = document.getElementById("measurements").getElementsByTagName('tbody')[0];
+    const rowCount = table.rows.length + 1;
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `
+      <td>${rowCount}</td>
+      <td><textarea name="desc[]"></textarea></td>
+      <td><textarea name="specified[]"></textarea></td>
+      <td><textarea name="actual[]"></textarea></td>
+      <td><button type="button" class="btn remove-btn" onclick="removeRow(this)">Remove</button></td>
+    `;
+    table.appendChild(newRow);
+  }
+
+  function removeRow(btn) {
+    btn.closest("tr").remove();
+  }
+
+  function loadDrawingImage() {
+    const drawingNumber = document.getElementById('drawing_number').value.trim();
+    const drawingArea = document.getElementById('drawingArea');
+
+    if (drawingNumber) {
+      fetch(`view_drawing.php?drawing_number=${encodeURIComponent(drawingNumber)}`)
+        .then(res => res.text())
+        .then(html => {
+          drawingArea.innerHTML = html;
+        })
+        .catch(err => {
+          drawingArea.innerHTML = "Error loading drawing.";
+        });
+    } else {
+      drawingArea.innerHTML = "No Drawing Selected";
+    }
+  }
+
+  window.onload = function () {
+    const params = new URLSearchParams(window.location.search);
+    const ginNo = params.get('gin_no');
+    if (ginNo) {
+      document.getElementById('gin_no').value = ginNo;
+      fetch(`fetch_gin_data.php?gin_no=${encodeURIComponent(ginNo)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) {
+            document.getElementById('part_description').value = data.description || '';
+            document.getElementById('supplier_name').value = data.transporter_name || '';
+            document.getElementById('date').value = data.date || '';
+            document.getElementById('drawing_number').value = data.drawing_number || '';
+            document.getElementById('tool_category').value = data.tool_category || '';
+            document.getElementById('quantity').value = data.quantity || '';
+            loadDrawingImage(); // auto-load image
+          }
+        });
+    }
+  };
+</script>
+
+</body>
+</html>   
